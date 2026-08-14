@@ -1,0 +1,8 @@
+node_modules
+api/node_modules
+web/node_modules
+dist
+.expo
+android/build
+android/app/build
+.git
