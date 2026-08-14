@@ -7,6 +7,8 @@ import { getMyAppointments, getBadges, getVitals } from '@/services/api';
 import type { Appointment, Badge, VitalReading } from '@/types';
 import { AppointmentCard } from '@/components/AppointmentCard';
 import { BadgeCard } from '@/components/BadgeCard';
+import { DigitalPatientCardModal } from '@/components/DigitalPatientCardModal';
+import { useAccessibility } from '@/context/AccessibilityContext';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { MainTabParamList } from '@/navigation/MainTabs';
 
@@ -14,10 +16,12 @@ type Props = BottomTabScreenProps<MainTabParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const { patient } = useAuth();
+  const { isLargeText, toggleLargeText, speakText, isSpeaking, stopSpeech } = useAccessibility();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [vitals, setVitals] = useState<VitalReading[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [cardModalVisible, setCardModalVisible] = useState(false);
 
   const load = async () => {
     try {
@@ -69,9 +73,51 @@ export function HomeScreen({ navigation }: Props) {
             <Ionicons name="person" size={28} color={KHH_COLORS.PRIMARY_TEAL} />
           </View>
           <View style={{ flex: 1, marginLeft: SPACING.md }}>
-            <Text style={styles.patientName}>{patient?.name ?? 'ผู้ป่วย'}</Text>
+            <Text style={[styles.patientName, isLargeText && { fontSize: 20 }]}>
+              {patient?.name ?? 'ผู้ป่วย'}
+            </Text>
             <Text style={styles.patientHn}>HN: {patient?.hn ?? '-'}</Text>
           </View>
+          <Pressable
+            style={styles.cardHeaderBtn}
+            onPress={() => setCardModalVisible(true)}
+          >
+            <Ionicons name="qr-code" size={18} color="#0D9488" />
+            <Text style={styles.cardHeaderBtnText}>บัตรดิจิทัล</Text>
+          </Pressable>
+        </View>
+
+        {/* Accessibility & Elderly Assistance Bar */}
+        <View style={styles.elderlyBar}>
+          <Pressable
+            style={[styles.elderlyBtn, isSpeaking && styles.elderlyBtnActive]}
+            onPress={() => {
+              if (isSpeaking) {
+                stopSpeech();
+              } else if (nextAppointment) {
+                speakText(
+                  `ท่านมีนัดหมาย ถัดไป วันที่ ${nextAppointment.date} คลินิก ${nextAppointment.clinic} แพทย์ผู้ตรวจ ${nextAppointment.doctorName}`
+                );
+              } else {
+                speakText(`สวัสดีค่ะ คุณ${patient?.name ?? 'ผู้ป่วย'} โรงพยาบาลคลองหาด ยินดีต้อนรับค่ะ`);
+              }
+            }}
+          >
+            <Ionicons name={isSpeaking ? 'stop-circle' : 'volume-high'} size={18} color={isSpeaking ? '#DC2626' : '#0D9488'} />
+            <Text style={[styles.elderlyBtnText, isSpeaking && { color: '#DC2626' }]}>
+              {isSpeaking ? 'หยุดอ่าน' : '🔊 อ่านใบนัดให้ฟัง'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.elderlyBtn, isLargeText && styles.elderlyBtnActive]}
+            onPress={toggleLargeText}
+          >
+            <Ionicons name="text" size={16} color={isLargeText ? '#059669' : '#475569'} />
+            <Text style={styles.elderlyBtnText}>
+              {isLargeText ? '🔤 อักษรปกติ' : '🔤 อักษรใหญ่'}
+            </Text>
+          </Pressable>
         </View>
 
         <View style={styles.statsSummaryRow}>
@@ -91,6 +137,23 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       </View>
+
+      <DigitalPatientCardModal
+        visible={cardModalVisible}
+        onClose={() => setCardModalVisible(false)}
+        patient={
+          patient
+            ? {
+                hn: patient.hn,
+                fullName: patient.name,
+                dob: '1985-01-01',
+                gender: 'M',
+                idCard: '1-1000-00000-00-0',
+                phone: '0812345678',
+              }
+            : null
+        }
+      />
 
       {/* Emergency Banner */}
       <Pressable style={styles.emergencyBanner} onPress={() => navigation.navigate('Contact')}>
@@ -219,6 +282,44 @@ const styles = StyleSheet.create({
   },
   patientName: { ...TYPE.h1, color: '#FFFFFF' },
   patientHn: { ...TYPE.body, color: '#CCFBF1', marginTop: 2 },
+  cardHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.pill,
+  },
+  cardHeaderBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0D9488',
+  },
+  elderlyBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: SPACING.md,
+  },
+  elderlyBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 8,
+    borderRadius: RADIUS.md,
+  },
+  elderlyBtnActive: {
+    backgroundColor: '#FEF2F2',
+  },
+  elderlyBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
   statsSummaryRow: {
     flexDirection: 'row',
     backgroundColor: 'rgba(0, 0, 0, 0.15)',
