@@ -96,7 +96,7 @@ export function HomeScreen({ navigation }: Props) {
                 stopSpeech();
               } else if (nextAppointment) {
                 speakText(
-                  `ท่านมีนัดหมาย ถัดไป วันที่ ${nextAppointment.date} คลินิก ${nextAppointment.clinic} แพทย์ผู้ตรวจ ${nextAppointment.doctorName}`
+                  `ท่านมีนัดหมาย ถัดไป วันที่ ${nextAppointment.date} คลินิก ${nextAppointment.clinic} แพทย์ผู้ตรวจ ${nextAppointment.doctor ?? ''}`
                 );
               } else {
                 speakText(`สวัสดีค่ะ คุณ${patient?.name ?? 'ผู้ป่วย'} โรงพยาบาลคลองหาด ยินดีต้อนรับค่ะ`);

@@ -9,8 +9,16 @@ import {
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { PatientProfile } from '@/types';
 import { useAccessibility } from '@/context/AccessibilityContext';
+
+export interface PatientProfile {
+  hn: string;
+  fullName: string;
+  dob?: string;
+  gender?: string;
+  idCard?: string;
+  phone?: string;
+}
 
 interface DigitalPatientCardModalProps {
   visible: boolean;

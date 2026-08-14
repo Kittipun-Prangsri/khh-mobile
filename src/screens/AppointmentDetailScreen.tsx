@@ -19,8 +19,8 @@ export function AppointmentDetailScreen({ route }: Props) {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
-    getMyAppointments().then((list) => {
-      setAppointment(list.find((a) => a.id === appointmentId) ?? null);
+    getMyAppointments().then((list: Appointment[]) => {
+      setAppointment(list.find((a: Appointment) => a.id === appointmentId) ?? null);
     });
   }, [appointmentId]);
 
