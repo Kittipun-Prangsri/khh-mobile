@@ -27,13 +27,20 @@
       "permissions": [
         "USE_BIOMETRIC",
         "USE_FINGERPRINT",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "plugins": [
       "expo-secure-store",
       "expo-local-authentication",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3adb5640-441a-4081-b0b4-988454462955"
+      }
+    }
   }
 }

@@ -42,6 +42,12 @@ export default function RootLayout({
     <html lang="th" className={`${prompt.variable} ${sarabun.variable} ${inter.variable} h-full`}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0D9488" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="KHH Connect" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
       </head>
       <body className="font-sans flex flex-col min-h-screen bg-slate-50 text-slate-800 antialiased">
         {children}
