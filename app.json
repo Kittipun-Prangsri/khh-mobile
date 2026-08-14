@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "KHH Safe-Connect",
+    "slug": "khh-safe-connect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0D9488"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.khh.safeconnect",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "ใช้ Face ID เพื่อยืนยันตัวตนก่อนเข้าถึงข้อมูลสุขภาพของท่าน"
+      }
+    },
+    "android": {
+      "package": "org.khh.safeconnect",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D9488"
+      },
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-local-authentication",
+      "expo-font"
+    ]
+  }
+}

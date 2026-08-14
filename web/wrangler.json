@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "khh-safe-connect",
+  "pages_build_output_dir": ".next",
+  "compatibility_date": "2026-08-02",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}

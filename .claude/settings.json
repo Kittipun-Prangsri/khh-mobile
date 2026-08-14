@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/**)",
+      "Bash(npx --yes playwright install webkit)",
+      "Bash(npm ls *)"
+    ]
+  }
+}
