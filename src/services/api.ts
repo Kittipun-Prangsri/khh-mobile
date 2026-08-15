@@ -88,6 +88,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
     const json: any = await res.json();
     if (json.status === 'success') {
+      // Auth responses carry `patient` alongside `token`/`pdpaPinRequired`
+      // — return the whole payload so callers can destructure all of it,
+      // instead of unwrapping down to just `patient` like the branches below.
+      if (json.token || typeof json.pdpaPinRequired === 'boolean') return json as unknown as T;
       if (json.appointments) return json.appointments as unknown as T;
       if (json.history) return json.history as unknown as T;
       if (json.patient) return json.patient as unknown as T;
@@ -107,22 +111,23 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // ---- Auth / PDPA ----------------------------------------------------------
 
 export function verifyPatientByHn(cidOrHn: string) {
-  return request<{ patient: Patient; pdpaPinRequired: boolean }>(`/hosxp/patients/${cidOrHn}`, {
-    method: 'GET',
+  return request<{ patient: Patient; pdpaPinRequired: boolean }>('/auth/lookup', {
+    method: 'POST',
+    body: JSON.stringify({ query: cidOrHn }),
   }).then((res: any) => {
     const p = res.patient || res;
     return {
       patient: {
         hn: p.hn ? (p.hn.startsWith('HN-') ? p.hn : `HN-${p.hn}`) : cidOrHn,
-        name: p.fullName || p.name || 'ผู้ป่วย HOSxP',
+        name: p.name || p.fullName || 'ผู้ป่วย HOSxP',
         role: 'patient' as const,
-        pdpaVerified: true,
+        pdpaVerified: false,
       },
-      pdpaPinRequired: false,
+      pdpaPinRequired: res.pdpaPinRequired !== false,
     };
   }).catch(() => ({
-    patient: { hn: cidOrHn || 'HN-670012', name: 'สมชาย ใจดี', role: 'patient' as const, pdpaVerified: true },
-    pdpaPinRequired: false,
+    patient: { hn: cidOrHn || 'HN-670012', name: 'สมชาย ใจดี', role: 'patient' as const, pdpaVerified: false },
+    pdpaPinRequired: true,
   }));
 }
 
@@ -139,7 +144,7 @@ export function submitPdpaPin(hn: string, pin: string) {
 // ---- Appointments -----------------------------------------------------
 
 export function getMyAppointments() {
-  return request<Appointment[]>('/hosxp/appointments').then((data: any) => {
+  return request<Appointment[]>('/appointments').then((data: any) => {
     const rawList = Array.isArray(data) ? data : data.appointments || [];
     if (!rawList || rawList.length === 0) return MOCK_APPOINTMENTS;
     return rawList.map((a: any) => ({
@@ -149,20 +154,23 @@ export function getMyAppointments() {
       clinic: a.clinicName || a.clinic || 'คลินิก NCDs',
       doctor: a.doctorName || a.doctor || 'แพทย์ผู้ตรวจ',
       status: (a.status || 'upcoming') as Appointment['status'],
-      checkinCode: `KHH-CHECKIN:${a.hn || 'HN-000'}:${a.id || '000'}`,
+      // Trust the server-issued check-in code when present — it's built
+      // server-side from the real HN, not reconstructable client-side
+      // since the client never receives the raw HN in this list.
+      checkinCode: a.checkinCode || `KHH-CHECKIN:${a.hn || 'HN-000'}:${a.id || '000'}`,
     }));
   }).catch(() => MOCK_APPOINTMENTS);
 }
 
 export function confirmAppointment(id: string) {
-  return request<Appointment>(`/hosxp/appointments/${id}/confirm`, { method: 'POST' }).catch(() => ({
+  return request<Appointment>(`/appointments/${id}/confirm`, { method: 'POST' }).catch(() => ({
     ...MOCK_APPOINTMENTS[0],
     status: 'confirmed' as const,
   }));
 }
 
 export function requestReschedule(id: string, reason: string) {
-  return request<Appointment>(`/hosxp/appointments/${id}/reschedule`, {
+  return request<Appointment>(`/appointments/${id}/reschedule`, {
     method: 'POST',
     body: JSON.stringify({ reason }),
   }).catch(() => ({

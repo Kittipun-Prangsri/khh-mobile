@@ -12,6 +12,9 @@ export const KHH_CONTACTS = {
 
 // Base URL for the existing HOSxP-backed API that already serves the LINE
 // webhook (apps/web). The mobile app is a second client of the SAME backend
-// — no new HOSxP integration should be written for this app.
+// — no new HOSxP integration should be written for this app. The real
+// endpoints live under apps/web/app/api/mobile/* on the same on-prem host
+// as the LINE webhook (khhncd.khostime.site), not the separate apps/api
+// Express service — set EXPO_PUBLIC_API_BASE_URL to override for local dev.
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:5003/api/v1';
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://khhncd.khostime.site/api/mobile';
